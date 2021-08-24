@@ -2,7 +2,7 @@ from tkinter import *
 from tkinter import ttk
 import pandas as pd
 
-data = pd.read_csv('tweets_22.08.2021_tweepy.csv')
+data = pd.read_csv('test_data/tweets_22.08.2021_tweepy.csv')
 columns = data.columns.values
 
 # basic statistics about the csv
