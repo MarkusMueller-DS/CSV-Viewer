@@ -1,7 +1,6 @@
 import tkinter as tk
 import os
 import glob
-from tkinter.constants import ANCHOR
 from tkinter import StringVar, filedialog
 from tkinter import ttk
 import csv
