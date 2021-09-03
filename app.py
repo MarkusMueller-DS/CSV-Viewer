@@ -12,6 +12,7 @@ def browse_button():
     # read the selected file into a pandas DataFrame
     tree_main.delete(*tree_main.get_children())             # delete previous tree
     tree_stats.delete(*tree_stats.get_children())
+    tree_focus.delete(*tree_focus.get_children())
     insert_data()
     basic_stats()
     insert_tree_stats()
@@ -40,13 +41,13 @@ def insert_data():
 def basic_stats():
     numCols = data.shape[1]
     numRows = data.shape[0]
-    statsContent.config(text=f"Rows: {numRows} / Cols: {numCols}")
+    statsContent.config(text=f"Rows: {numRows} / Cols: {numCols} ")
 
 def insert_tree_stats():
     tree_stats['columns'] = ('Column', 'Data Type')
     tree_stats.column('#0', width=0, stretch=NO)
-    tree_stats.column('Column',anchor=W, width=50)
-    tree_stats.column('Data Type',anchor=W, width=50)
+    tree_stats.column('Column',anchor=W, width=80)
+    tree_stats.column('Data Type',anchor=W, width=80)
     tree_stats.heading('#0', text='')
     tree_stats.heading('Column',text='Column', anchor=W)
     tree_stats.heading('Data Type',text='Data Type', anchor=W)
@@ -58,16 +59,25 @@ def insert_tree_stats():
 def select_item(a):
     global index
     index = tree_main.selection()[0]
-    #print(data.iloc[[index]])
+    tree_focus.delete(*tree_focus.get_children())       # delete prev tree
     # insert data into tree_focus
+    tree_focus['columns'] = ('Column', 'Content')
     tree_focus.column('#0', width=0, stretch=NO)
-    tree_focus.column('Column',anchor=W, width=30)
-    tree_focus.column('Content',anchor=W, width=120)
+    tree_focus.column('Column',anchor=W, width=80)
+    tree_focus.column('Content',anchor=W, width=80)
     tree_focus.heading('#0', text='')
     tree_focus.heading('Column',text='Column', anchor=W)
     tree_focus.heading('Content',text='Content', anchor=W)
-    #todo
-
+    # creat DataFrame to query data
+    select_data = data.iloc[[index]]
+    columns = select_data.columns.values.tolist()
+    values = select_data.values.tolist()[0]
+    df_dict = {'columns': columns, 'content': values}
+    df_select = pd.DataFrame(df_dict)
+    df_records = df_select.to_records()
+    for counter, row in enumerate(list(df_records)):
+        lst = [row[1], row[2]]
+        tree_focus.insert(parent='', index='end', iid=str(counter), text='', values=tuple(lst))
 
 
 ## ININT GUI
@@ -75,7 +85,8 @@ root = Tk()
 root.title("CSV Viewer")
 
 root.rowconfigure(0, weight=1)
-root.rowconfigure(1, weight=1)
+root.rowconfigure(1, weight=0)
+root.columnconfigure(0, weight=0)
 root.columnconfigure(1, weight=1)
 
 ## STYLING
@@ -106,16 +117,21 @@ tree_scroll.config(command=tree_main.yview)
 # TreeView Focus
 tree_focus = ttk.Treeview(root)
 
-# add widgets
+## LAYOUT 
+# Column 1 (left side)
 openButton.grid(column=0, row=0, sticky="N")
-tree_frame.grid(column=1, row=0, sticky="NS")
-tree_main.grid(column=0, row=0)
-tree_scroll.grid(column=1, row=0, sticky="NS")
-statsFrame.grid(column=0, row=1)
+statsFrame.grid(column=0, row=1, sticky="NW")
 statsHeader.grid(column=0, row=0, sticky="N")
 statsContent.grid(column=0, row=1, sticky="NW")
 tree_stats.grid(column=0, row=2, sticky="NW")
-tree_focus.grid(column=1, row=1)
+
+
+# Column 2 (right side)
+tree_frame.grid(column=1, row=0, sticky="NW")
+tree_main.grid(column=0, row=0, sticky="NW")
+tree_scroll.grid(column=1, row=0, sticky="NS")
+tree_focus.grid(column=1, row=1, sticky="NW")
+
 
 
 ## BINDINGS
