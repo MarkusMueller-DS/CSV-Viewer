@@ -4,6 +4,7 @@ from numpy import index_exp
 import pandas as pd
 import os
 import glob
+import pyperclip3 as pc
 
 def browse_button():
     global file_path
@@ -20,6 +21,7 @@ def browse_button():
 
 def insert_data():
     global data
+    global columns
     data = pd.read_csv(file_path)
     columns = data.columns.values
     columns_tupel = tuple(columns)
@@ -42,17 +44,23 @@ def insert_data():
 def basic_stats():
     numCols = data.shape[1]
     numRows = data.shape[0]
-    statsContent.config(text=f"Rows: {numRows} / Cols: {numCols} ")
+    dups = data.duplicated().sum() 
+    if dups > 0 : x = 'yes' 
+    else : x = 'no'
+    statsContent.config(text=f"Rows: {numRows} / Cols: {numCols} / Duplicates: {x}")
 
 def insert_tree_stats():
-    tree_stats['columns'] = ('Column', 'Data Type')
+    tree_stats['columns'] = ('Column', 'Data Type', 'Missing Values')
     tree_stats.column('#0', width=0, stretch=NO)
-    tree_stats.column('Column',anchor=W, width=80)
-    tree_stats.column('Data Type',anchor=W, width=80)
+    tree_stats.column('Column',anchor=W)
+    tree_stats.column('Data Type',anchor=W)
+    tree_stats.column('Missing Values', anchor=W, width=80, stretch=NO)
     tree_stats.heading('#0', text='')
     tree_stats.heading('Column',text='Column', anchor=W)
     tree_stats.heading('Data Type',text='Data Type', anchor=W)
+    tree_stats.heading('Missing Values',text='Missing Values', anchor=W)
     df_types = pd.DataFrame(data.dtypes)
+    df_types['missing'] = data.isnull().sum(axis=0).values.tolist()
     df_records = df_types.to_records()
     for counter, row in enumerate(list(df_records)):
         tree_stats.insert(parent='', index='end', iid=str(counter), text='', values=tuple(row))
@@ -96,30 +104,53 @@ def lookup_data():
     tree_main.delete(*tree_main.get_children())
     tree_focus.delete(*tree_focus.get_children())
     txtBox.delete('1.0', END)
-    # search pandas DataFrame
-    # check type of serach parameter
-    if inputValue.isnumeric():
-        print("number")
-        # df.loc[df['column_name'] == some_value]
-    else:
-        print("string")
-        # df.loc[df['column_name'].isin(some_values)]
-        search_text()
+    # open window to ask which column to search in
+    search = Toplevel(root)
+    search.title("Select Column")
+    search.geometry("400x100")
+    search_frame = LabelFrame(search, text="Which column?", fg="black")
+    search_frame.pack(padx=10, pady=10)
+    # dropDown
+    variable = StringVar(search)
+    variable.set(columns[0])
+    # style OptionMenu
+    opt = OptionMenu(search_frame, variable, *columns)
+    opt.config(width=90)
+    opt.config(fg='black')
+    opt.pack()
+    
+    def search_main():
+        print(variable.get())
+        search.destroy()
+        tree_main.delete(*tree_main.get_children())  
+        #todo
 
-def search_text(regex_: str, df, case=False):
-    # select text like columns
-    textlikes = data.select_dtypes(include=[object, "string"])
-
-    pass
+    search_Button = Button(search_frame, text="Search", fg="black", command=search_main)
+    search_Button.pack()
     
 
+    # search pandas DataFrame
+    # check type of serach parameter
+    
 
 def delete_many():
-    # ToDo 
     # functiont hat deltet the output on the gui
-    pass
+    tree_main.delete(*tree_main.get_children())             # delete previous tree
+    tree_stats.delete(*tree_stats.get_children())
+    tree_focus.delete(*tree_focus.get_children())
+    txt.delete("1.0", END)
 
-
+def clipboard(event):
+    try: 
+        m.tk_popup(event.x_root, event.y_root)
+        col = tree_main.identify_column(event.x)
+        col = col[1:]
+        col = int(col) - 1
+        index = tree_main.selection()[0]
+        copy_to_clipboard = data.iloc[[index]].values[0][col]
+        pc.copy(copy_to_clipboard)
+    finally:
+        m.grab_release()
 
 ## ININT GUI
 root = Tk()
@@ -171,6 +202,10 @@ tree_focus = ttk.Treeview(focus_frame)
 # Text of content
 txt = Text(focus_frame, bg="white", fg="black", padx=5, width=40)
 
+# misc
+m = Menu(root, tearoff = 0)
+m.add_command(label = 'Copy to Clipboard')
+
 ## LAYOUT 
 # Column 1 (left side)
 button_frame.grid(column=0, row=0, sticky="N")
@@ -198,6 +233,7 @@ txt.grid(column=1, row=0)
 
 ## BINDINGS
 tree_main.bind('<ButtonRelease-1>', select_item)
+tree_main.bind('<ButtonRelease-2>', clipboard)
 tree_focus.bind('<ButtonRelease-1>', show_content)
 
 root.mainloop()
