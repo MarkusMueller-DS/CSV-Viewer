@@ -30,7 +30,7 @@ def insert_data():
     # Formate Columns
     tree_main.column('#0', width=0, stretch=NO)
     for col in columns:
-        tree_main.column(col, anchor=W, width=120)
+        tree_main.column(col, anchor=W, width=80)
     # Create Headings
     tree_main.heading('#0', text='')
     for col in columns:
