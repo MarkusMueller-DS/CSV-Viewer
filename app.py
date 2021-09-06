@@ -174,7 +174,7 @@ style.map('Treeview', background=[('selected', 'red')])
 button_frame = Frame(root)
 # Open Button
 openButton = Button(button_frame, text="Open File...", fg="black", command=browse_button)
-# Open in new Winfow
+# Open in new Window
 openNewWinButton = Button(button_frame, text="Open File in new Window", fg="black")    # ToDo
 # Reset Button
 resetButton = Button(button_frame, text="Reset", fg="black", command=delete_many)      # ToDo

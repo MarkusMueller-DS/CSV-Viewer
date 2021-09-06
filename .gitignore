@@ -4,5 +4,4 @@ Untitled.ipynb
 test.py
 .DS_Store
 start.py
-
-
+__pycache__
