@@ -14,6 +14,7 @@ CSV-Viewer to get all the relevant information at one peak.
     - missing values
     - extra view of a selected row
     - extra view of a selected item in a row
+- resizeable
 
 ## Getting Started
 
