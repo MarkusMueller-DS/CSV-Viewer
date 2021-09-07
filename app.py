@@ -1,239 +1,201 @@
+# CSV-Viewer by Markus Müller
+
 from tkinter import *
 from tkinter import ttk, filedialog
 from numpy import index_exp
 import pandas as pd
 import os
-import glob
 import pyperclip3 as pc
 
-def browse_button():
+# Functions
+def main_window():
+    # alomost everything gets managed here
     global file_path
     cwd = os.getcwd()
     file_path= filedialog.askopenfilename(initialdir=cwd, filetypes=[("CSV file","*.csv")])
-    # read the selected file into a pandas DataFrame
-    tree_main.delete(*tree_main.get_children())             # delete previous tree
-    tree_stats.delete(*tree_stats.get_children())
-    tree_focus.delete(*tree_focus.get_children())
-    txt.delete("1.0", END)
-    insert_data()
-    basic_stats()
-    insert_tree_stats()
+    root.withdraw()
+    main_window = Toplevel(root)
+    main_window.title("CSV Viewer")
+    window_width = 1200
+    window_height = 800
+    screen_width = root.winfo_screenwidth()
+    screen_height = root.winfo_screenheight()
+    center_x = int(screen_width/2 - window_width / 2)
+    center_y = int(screen_height/2 - window_height / 2)
+    main_window.geometry(f'{window_width}x{window_height}+{center_x}+{center_y}')
 
-def insert_data():
-    global data
-    global columns
+    def new_file():
+        # exit current window and unhide root window to select new file
+        main_window.destroy()
+        root.deiconify()
+    
+    def exit():
+        main_window.destroy()
+        root.destroy()
+        
+    # menubar
+    menubar = Menu(main_window)
+    filemenu = Menu(menubar, tearoff=0)
+    filemenu.add_command(label="Open", command=new_file)
+    filemenu.add_command(label="Exit", command=exit)
+    menubar.add_cascade(label="File", menu=filemenu)
+    root.config(menu=menubar)
+
+    ## FRAMES
+    # Main Frame where the CSV-Viever is palced
+    main_frame = LabelFrame(main_window, text="Main View", fg="black", bd=3, pady=5, padx=5)
+    main_frame.pack(fill='both', expand=True, padx=5, pady=5)
+    # PLACEHOLDER frmae where text information is placed
+    txt_frame = LabelFrame(main_window, text="File Information", fg="black", bd=3, pady=5, padx=5, height=50)
+    txt_frame.pack(fill='both', expand=FALSE, padx=5, pady=5)
+    # Stats Frame where more Information about the file and row is placed
+    stats_frame = LabelFrame(main_window, text="More Information", fg="black",bd=3, pady=5, padx=5)
+    stats_frame.pack(fill='both', expand=True, padx=5, pady=5)
+
+    ## READ DATA
     data = pd.read_csv(file_path)
+
+    ### WIDGETS
+    ## Main Treeview 
+    main_tree = ttk.Treeview(main_frame)
+    main_tree.place(rely=0, relx=0, relwidth=1, relheight=1)
+
+    scroll_Y = Scrollbar(main_frame, orient="vertical", command=main_tree.yview)
+    scroll_X = Scrollbar(main_frame, orient="horizontal", command=main_tree.xview)
+    main_tree.configure(yscrollcommand=scroll_Y.set, xscrollcommand=scroll_X.set)
+    scroll_Y.pack(side=RIGHT, fill=Y)
+    scroll_X.pack(side=BOTTOM, fill=X) 
+
     columns = data.columns.values
     columns_tupel = tuple(columns)
-    # Define Columns
-    tree_main['columns'] = columns_tupel
-    # Formate Columns
-    tree_main.column('#0', width=0, stretch=NO)
+    main_tree['columns'] = columns_tupel
+    main_tree.column('#0', width=0, stretch=NO)
     for col in columns:
-        tree_main.column(col, anchor=W, width=80)
-    # Create Headings
-    tree_main.heading('#0', text='')
+        main_tree.column(col, anchor=W, width=100, stretch=True)
+    main_tree.heading('#0', text='')
     for col in columns:
-        tree_main.heading(col, text=col, anchor=W)
-    # Add Data
+        main_tree.heading(col, text=col, anchor=W)
     records = data.to_records(index=False)
     result = list(records)
     for counter, row in enumerate(result):
-        tree_main.insert(parent='', index='end', iid=str(counter), text='', values=tuple(row))
+        main_tree.insert(parent='', index='end', iid=str(counter), text='', values=tuple(row))
 
-def basic_stats():
-    numCols = data.shape[1]
-    numRows = data.shape[0]
-    dups = data.duplicated().sum() 
-    if dups > 0 : x = 'yes' 
-    else : x = 'no'
-    statsContent.config(text=f"Rows: {numRows} / Cols: {numCols} / Duplicates: {x}")
+    ## Text area
+    text_content = Label(txt_frame, fg="black")
+    text_content.pack()
+    def update_text_content():
+        numCols = data.shape[1]
+        numRows = data.shape[0]
+        dups = data.duplicated().sum() 
+        if dups > 0 : x = 'yes' 
+        else : x = 'no'
+        text_content.config(text=f"Rows: {numRows} / Cols: {numCols} / Duplicates: {x}")
+    update_text_content()
+    
+    ## Stats Treeviews (multiple Treeviews in one row)
+    # Tree with data types and missing values
+    stats_tree = ttk.Treeview(stats_frame)
+    stats_tree.place(rely=0, relx=0, relwidth=0.33, relheight=1)
 
-def insert_tree_stats():
-    tree_stats['columns'] = ('Column', 'Data Type', 'Missing Values')
-    tree_stats.column('#0', width=0, stretch=NO)
-    tree_stats.column('Column',anchor=W)
-    tree_stats.column('Data Type',anchor=W)
-    tree_stats.column('Missing Values', anchor=W, width=80, stretch=NO)
-    tree_stats.heading('#0', text='')
-    tree_stats.heading('Column',text='Column', anchor=W)
-    tree_stats.heading('Data Type',text='Data Type', anchor=W)
-    tree_stats.heading('Missing Values',text='Missing Values', anchor=W)
+    """ Add later 
+    stats_scroll_Y = Scrollbar(stats_tree, orient="vertical", command=stats_tree.yview)
+    stats_scroll_X = Scrollbar(stats_tree, orient="horizontal", command=stats_tree.xview)
+    stats_tree.configure(yscrollcommand=stats_scroll_Y.set, xscrollcommand=stats_scroll_X.set)
+    stats_scroll_Y.pack(side=RIGHT, fill=Y)
+    stats_scroll_X.pack(side=BOTTOM, fill=X) 
+    """
+
+    stats_tree['columns'] = ('Column', 'Data Type', 'Missing Values')
+    stats_tree.column('#0', width=0, stretch=NO)
+    stats_tree.column('Column',anchor=W, width=100, stretch=True)
+    stats_tree.column('Data Type',anchor=W, width=100, stretch=True)
+    stats_tree.column('Missing Values', anchor=W, width=100, stretch=True)
+    stats_tree.heading('#0', text='')
+    stats_tree.heading('Column',text='Column', anchor=W)
+    stats_tree.heading('Data Type',text='Data Type', anchor=W)
+    stats_tree.heading('Missing Values',text='Missing Values', anchor=W)
     df_types = pd.DataFrame(data.dtypes)
     df_types['missing'] = data.isnull().sum(axis=0).values.tolist()
     df_records = df_types.to_records()
     for counter, row in enumerate(list(df_records)):
-        tree_stats.insert(parent='', index='end', iid=str(counter), text='', values=tuple(row))
+        stats_tree.insert(parent='', index='end', iid=str(counter), text='', values=tuple(row))
 
-def select_item(event):
-    global index
-    index = tree_main.selection()[0]
-    tree_focus.delete(*tree_focus.get_children())       # delete prev tree
-    # insert data into tree_focus
-    tree_focus['columns'] = ('Column', 'Content')
-    tree_focus.column('#0', width=0, stretch=NO)
-    tree_focus.column('Column',anchor=W, width=80)
-    tree_focus.column('Content',anchor=W, width=80)
-    tree_focus.heading('#0', text='')
-    tree_focus.heading('Column',text='Column', anchor=W)
-    tree_focus.heading('Content',text='Content', anchor=W)
-    # create DataFrame to query data
-    select_data = data.iloc[[index]]
-    columns = select_data.columns.values.tolist()
-    values = select_data.values.tolist()[0]
-    df_dict = {'columns': columns, 'content': values}
-    df_select = pd.DataFrame(df_dict)
-    df_records = df_select.to_records()
-    for counter, row in enumerate(list(df_records)):
-        lst = [row[1], row[2]]
-        tree_focus.insert(parent='', index='end', iid=str(counter), text='', values=tuple(lst))
+    # Tree with data from column and missing values
+    focus_tree = ttk.Treeview(stats_frame)
+    focus_tree.place(rely=0, relx=0.33, relwidth=0.33, relheight=1)
+    def select_item(event):
+        global index
+        index = main_tree.selection()[0]
+        focus_tree.delete(*focus_tree.get_children())       # delete prev tree
+        # insert data into focus_tree
+        focus_tree['columns'] = ('Column', 'Content')
+        focus_tree.column('#0', width=0, stretch=NO)
+        focus_tree.column('Column',anchor=W, width=80)
+        focus_tree.column('Content',anchor=W, width=80)
+        focus_tree.heading('#0', text='')
+        focus_tree.heading('Column',text='Column', anchor=W)
+        focus_tree.heading('Content',text='Content', anchor=W)
+        # create DataFrame to query data
+        select_data = data.iloc[[index]]
+        columns = select_data.columns.values.tolist()
+        values = select_data.values.tolist()[0]
+        df_dict = {'columns': columns, 'content': values}
+        df_select = pd.DataFrame(df_dict)
+        df_records = df_select.to_records()
+        for counter, row in enumerate(list(df_records)):
+            lst = [row[1], row[2]]
+            focus_tree.insert(parent='', index='end', iid=str(counter), text='', values=tuple(lst))
 
-def show_content(event):
-    global index_focus
-    index_focus = tree_focus.selection()[0]
-    select_data = data.iloc[[index]]
-    columns = select_data.columns.values.tolist()
-    values_ = select_data.values.tolist()[0]
-    str = values_[int(index_focus)]
-    txt.delete("1.0", END)
-    txt.insert(END, str)
+    # Text field for focused content
+    txt = Text(stats_frame, bg="white", fg="black")
+    txt.place(rely=0, relx=0.66, relwidth=0.33, relheight=1)
+    def show_content(event):
+        global index_focus
+        index_focus = focus_tree.selection()[0]
+        select_data = data.iloc[[index]]
+        columns = select_data.columns.values.tolist()
+        values_ = select_data.values.tolist()[0]
+        str = values_[int(index_focus)]
+        txt.delete("1.0", END)
+        txt.insert(END, str)
 
-def lookup_data():
-    inputValue = txtBox.get("1.0","end-1c")
-    # clear main, focus and txtBox
-    tree_main.delete(*tree_main.get_children())
-    tree_focus.delete(*tree_focus.get_children())
-    txtBox.delete('1.0', END)
-    # open window to ask which column to search in
-    search = Toplevel(root)
-    search.title("Select Column")
-    search.geometry("400x100")
-    search_frame = LabelFrame(search, text="Which column?", fg="black")
-    search_frame.pack(padx=10, pady=10)
-    # dropDown
-    variable = StringVar(search)
-    variable.set(columns[0])
-    # style OptionMenu
-    opt = OptionMenu(search_frame, variable, *columns)
-    opt.config(width=90)
-    opt.config(fg='black')
-    opt.pack()
-    
-    def search_main():
-        print(variable.get())
-        search.destroy()
-        tree_main.delete(*tree_main.get_children())  
-        #todo
+    ## KEYBINDINGS
+    main_tree.bind('<ButtonRelease-1>', select_item)
+    focus_tree.bind('<ButtonRelease-1>', show_content)
 
-    search_Button = Button(search_frame, text="Search", fg="black", command=search_main)
-    search_Button.pack()
-    
+    ## CLOSE ROOT when main window is closed
+    main_window.protocol('WM_DELETE_WINDOW', lambda: onclose(main_window))
 
-    # search pandas DataFrame
-    # check type of serach parameter
-    
+def onclose(event):
+    # function to destroy the root window when main window is closed
+    root.destroy()
 
-def delete_many():
-    # functiont hat deltet the output on the gui
-    tree_main.delete(*tree_main.get_children())             # delete previous tree
-    tree_stats.delete(*tree_stats.get_children())
-    tree_focus.delete(*tree_focus.get_children())
-    txt.delete("1.0", END)
-
-def clipboard(event):
-    try: 
-        m.tk_popup(event.x_root, event.y_root)
-        col = tree_main.identify_column(event.x)
-        col = col[1:]
-        col = int(col) - 1
-        index = tree_main.selection()[0]
-        copy_to_clipboard = data.iloc[[index]].values[0][col]
-        pc.copy(copy_to_clipboard)
-    finally:
-        m.grab_release()
-
-## ININT GUI
+# Init Tkinter
+# Start-window
 root = Tk()
 root.title("CSV Viewer")
+window_width = 200
+window_height = 100
+screen_width = root.winfo_screenwidth()
+screen_height = root.winfo_screenheight()
+center_x = int(screen_width/2 - window_width / 2)
+center_y = int(screen_height/2 - window_height / 2)
+root.geometry(f'{window_width}x{window_height}+{center_x}+{center_y}')
+root.resizable(0,0)
 
-root.rowconfigure(0, weight=1)
-root.rowconfigure(1, weight=0)
-root.columnconfigure(0, weight=0)
-root.columnconfigure(1, weight=1)
-
-## STYLING
+# Styling
 style = ttk.Style(root)
 style.theme_use("default")
 style.configure("Treeview.heading", 
-    background = "silver",
-    foreground = "black",
+background = "silver",
+foreground = "black",
 )
-style.map('Treeview', background=[('selected', 'red')]) 
+style.map('Treeview', background=[('selected', 'red')])
 
-## WIDGETS
-button_frame = Frame(root)
-# Open Button
-openButton = Button(button_frame, text="Open File...", fg="black", command=browse_button)
-# Open in new Window
-openNewWinButton = Button(button_frame, text="Open File in new Window", fg="black")    # ToDo
-# Reset Button
-resetButton = Button(button_frame, text="Reset", fg="black", command=delete_many)      # ToDo
-# Statistics of the CSV-File
-statsFrame = Frame(root)
-statsHeader = Label(statsFrame, text="Basic stats of file", fg="black")
-statsContent = Label(statsFrame, fg="black")
-# TreeView Stats
-tree_stats = ttk.Treeview(statsFrame)
-
-# TreeView Main
-tree_frame = Frame(root)
-txtBox = Text(tree_frame, height=1, width=50, fg="black", bg="white")
-buttonSearch = Button(tree_frame, text="Search", fg="black", comman=lookup_data)
-tree_scroll = Scrollbar(tree_frame)
-tree_main = ttk.Treeview(tree_frame, yscrollcommand=tree_scroll.set)
-tree_scroll.config(command=tree_main.yview)
-
-# FOCUS SECTION
-focus_frame = Frame(root)
-
-# TreeView Focus
-tree_focus = ttk.Treeview(focus_frame)
-
-# Text of content
-txt = Text(focus_frame, bg="white", fg="black", padx=5, width=40)
-
-# misc
-m = Menu(root, tearoff = 0)
-m.add_command(label = 'Copy to Clipboard')
-
-## LAYOUT 
-# Column 1 (left side)
-button_frame.grid(column=0, row=0, sticky="N")
-openButton.grid(column=0, row=0, sticky="N")
-openNewWinButton.grid(column=0, row=1, sticky="N")
-resetButton.grid(column=0, row=2, sticky="N")
-
-statsFrame.grid(column=0, row=1, sticky="NW")
-statsHeader.grid(column=0, row=0, sticky="N")
-statsContent.grid(column=0, row=1, sticky="NW")
-tree_stats.grid(column=0, row=2, sticky="NW")
-
-
-# Column 2 (right side)
-tree_frame.grid(column=1, row=0, sticky="NW")
-txtBox.grid(column=0, row=0, sticky="NE")
-buttonSearch.grid(column=1, row=0, sticky="NE")
-tree_main.grid(column=0, row=1, sticky="NW")
-tree_scroll.grid(column=1, row=1, sticky="NWS")
-
-focus_frame.grid(column=1, row=1, sticky="NW")
-tree_focus.grid(column=0, row=0, sticky="NW")
-txt.grid(column=1, row=0)
-
-
-## BINDINGS
-tree_main.bind('<ButtonRelease-1>', select_item)
-tree_main.bind('<ButtonRelease-2>', clipboard)
-tree_focus.bind('<ButtonRelease-1>', show_content)
+# Widgets
+open_frame = LabelFrame(root, text="Select a CSV-File to view", fg="black", bd=4)
+open_frame.pack(fill="both", expand="yes", padx=10, pady=10)
+open_button = Button(open_frame, text="Open File...", fg="black", command=main_window)
+open_button.pack(pady=10)
 
 root.mainloop()
