@@ -32,7 +32,24 @@ def main_window():
     def exit():
         main_window.destroy()
         root.destroy()
+
+    def clipboard(event):
+        # allows user to save selected content to system clipboard (only in main_tree)
+        try: 
+            m.tk_popup(event.x_root, event.y_root)
+            col = main_tree.identify_column(event.x)
+            col = col[1:]
+            col = int(col) - 1
+            index = main_tree.selection()[0]
+            copy_to_clipboard = data.iloc[[index]].values[0][col]
+            pc.copy(copy_to_clipboard)
+        finally:
+            m.grab_release()
         
+    # misc
+    m = Menu(root, tearoff = 0)
+    m.add_command(label = 'Copy to Clipboard')
+    
     # menubar
     menubar = Menu(main_window)
     filemenu = Menu(menubar, tearoff=0)
@@ -161,6 +178,7 @@ def main_window():
 
     ## KEYBINDINGS
     main_tree.bind('<ButtonRelease-1>', select_item)
+    main_tree.bind('<ButtonRelease-2>', clipboard)
     focus_tree.bind('<ButtonRelease-1>', show_content)
 
     ## CLOSE ROOT when main window is closed
