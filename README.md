@@ -1,19 +1,20 @@
 # CSV-Viewer
-- Lightweight csv-viewer by Markus Müller
+Lightweight csv-viewer by Markus Müller
 
 ![screenshot](images/example.png)
 
 ## Description
 
 CSV-Viewer to get all the relevant information at one peak.
-- Main view with the wole csv-file
+- Main view with the whole csv-file
 - Infomration about
     - number of rows and columns
-    - are there duplicates?
+    - duplicates
     - data types (pandas DataFrame)
     - missing values
     - extra view of a selected row
     - extra view of a selected item in a row
+- resizeable
 
 ## Getting Started
 
