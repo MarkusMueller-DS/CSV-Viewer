@@ -32,6 +32,17 @@ def main_window():
     def exit():
         main_window.destroy()
         root.destroy()
+    
+    def about():
+        about_window = Toplevel(main_window)
+        about_window.title("About")
+        about_window.geometry("300x400")
+        about_frame = LabelFrame(about_window, text="About", fg="black", bd=3, pady=5, padx=5)
+        about_frame.pack(pady=5, padx=5)
+        txt = Text(about_frame, bg="white", fg="black")
+        txt.pack(fill='both', expand=True)
+        str_ = "CSV-Viewer created by Markus Müller\n\nFunctions:\n- copy to clipboard"
+        txt.insert(END, str_)
 
     def clipboard(event):
         # allows user to save selected content to system clipboard (only in main_tree)
@@ -56,6 +67,9 @@ def main_window():
     filemenu.add_command(label="Open", command=new_file)
     filemenu.add_command(label="Exit", command=exit)
     menubar.add_cascade(label="File", menu=filemenu)
+    aboutmenu = Menu(menubar)
+    menubar.add_cascade(label="About", menu=aboutmenu)
+    aboutmenu.add_command(label="About", command=about) 
     root.config(menu=menubar)
 
     ## FRAMES
