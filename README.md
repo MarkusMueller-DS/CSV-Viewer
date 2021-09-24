@@ -43,6 +43,8 @@ Markus Müller
 
 ## Version History
 
+* 0.2
+    * added search function
 * 0.1
     * Initial Release
 
