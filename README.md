@@ -15,6 +15,7 @@ CSV-Viewer to get all the relevant information at one peak.
     - extra view of a selected row
     - extra view of a selected item in a row
 - resizeable
+- searchable
 
 ## Getting Started
 
