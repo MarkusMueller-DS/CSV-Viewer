@@ -39,7 +39,6 @@ def main_window():
         search_win.destroy()
         # delete treeview
         main_tree.delete(*main_tree.get_children())
-        stats_tree.delete(*stats_tree.get_children())
         txt.delete("1.0", END)
         focus_tree.delete(*focus_tree.get_children())
         # query data
@@ -55,8 +54,8 @@ def main_window():
         flat_list = [item for sublist in result_index_list for item in sublist]
         set_list = set(flat_list)
         index_list = list(set_list)
-        print(index_list)
-        # data.iloc[list(set_list)]
+        data_query = data.iloc[index_list]
+        populateMainTree(data_query)
 
     def search():
         global search_entry, search_win
@@ -126,7 +125,7 @@ def main_window():
     data = pd.read_csv(file_path)
 
     ### WIDGETS
-    ## Main Treeview 
+    ## Main Treeview
     main_tree = ttk.Treeview(main_frame)
     main_tree.place(rely=0, relx=0, relwidth=1, relheight=1)
 
@@ -134,25 +133,29 @@ def main_window():
     scroll_X = Scrollbar(main_frame, orient="horizontal", command=main_tree.xview)
     main_tree.configure(yscrollcommand=scroll_Y.set, xscrollcommand=scroll_X.set)
     scroll_Y.pack(side=RIGHT, fill=Y)
-    scroll_X.pack(side=BOTTOM, fill=X) 
+    scroll_X.pack(side=BOTTOM, fill=X)
 
-    columns = data.columns.values
-    columns_tupel = tuple(columns)
-    main_tree['columns'] = columns_tupel
-    main_tree.column('#0', width=0, stretch=NO)
-    for col in columns:
-        main_tree.column(col, anchor=W, width=100, stretch=True)
-    main_tree.heading('#0', text='')
-    for col in columns:
-        main_tree.heading(col, text=col, anchor=W)
-    records = data.to_records(index=False)
-    result = list(records)
-    for counter, row in enumerate(result):
-        main_tree.insert(parent='', index='end', iid=str(counter), text='', values=tuple(row))
+    def populateMainTree(data_frame=data):
+        data = data_frame
+        columns = data.columns.values
+        columns_tupel = tuple(columns)
+        main_tree['columns'] = columns_tupel
+        main_tree.column('#0', width=0, stretch=NO)
+        for col in columns:
+            main_tree.column(col, anchor=W, width=100, stretch=True)
+        main_tree.heading('#0', text='')
+        for col in columns:
+            main_tree.heading(col, text=col, anchor=W)
+        records = data.to_records(index=False)
+        result = list(records)
+        for counter, row in enumerate(result):
+            main_tree.insert(parent='', index='end', iid=str(counter), text='', values=tuple(row))
+    populateMainTree()
 
     ## Text area
     text_content = Label(txt_frame, fg="black")
     text_content.pack()
+
     def update_text_content():
         numCols = data.shape[1]
         numRows = data.shape[0]
