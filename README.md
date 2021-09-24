@@ -44,7 +44,7 @@ Markus Müller
 
 ## Version History
 
-* 0.2
+* 0.2 (24.09.2020)
     * added search function
 * 0.1
     * Initial Release
