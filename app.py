@@ -2,7 +2,8 @@
 
 from tkinter import *
 from tkinter import ttk, filedialog
-from numpy import index_exp
+import numpy as np
+# from numpy import index_exp
 import pandas as pd
 import os
 import pyperclip3 as pc
@@ -28,11 +29,47 @@ def main_window():
         # exit current window and unhide root window to select new file
         main_window.destroy()
         root.deiconify()
-    
+
     def exit():
         main_window.destroy()
         root.destroy()
-    
+
+    def search_data():
+        search_str = search_entry.get()
+        search_win.destroy()
+        # delete treeview
+        main_tree.delete(*main_tree.get_children())
+        stats_tree.delete(*stats_tree.get_children())
+        txt.delete("1.0", END)
+        focus_tree.delete(*focus_tree.get_children())
+        # query data
+        data_str = data.astype('str')
+        result_index_list= []
+        for col in data_str.columns:
+            index_result = list(data_str.loc[data_str[col] == search_str].index.values)
+            if len(index_result) != 0:
+                result_index_list.append(index_result)
+            else:
+                continue
+
+        flat_list = [item for sublist in result_index_list for item in sublist]
+        set_list = set(flat_list)
+        index_list = list(set_list)
+        print(index_list)
+        # data.iloc[list(set_list)]
+
+    def search():
+        global search_entry, search_win
+        search_win = Toplevel(main_window)
+        search_win.title("Search")
+        search_win.geometry("300x130")
+        search_frame = LabelFrame(search_win, text="Search", fg="black", bd=3, pady=5, padx=5)
+        search_frame.pack(pady=5, padx=5)
+        search_entry = Entry(search_frame, bg="white", fg="black")
+        search_entry.pack(padx=5, pady=5)
+        search_button = Button(search_frame, text="Search", fg="black", bg="white", command=search_data)
+        search_button.pack()
+
     def about():
         about_window = Toplevel(main_window)
         about_window.title("About")
@@ -46,7 +83,7 @@ def main_window():
 
     def clipboard(event):
         # allows user to save selected content to system clipboard (only in main_tree)
-        try: 
+        try:
             m.tk_popup(event.x_root, event.y_root)
             col = main_tree.identify_column(event.x)
             col = col[1:]
@@ -56,20 +93,21 @@ def main_window():
             pc.copy(copy_to_clipboard)
         finally:
             m.grab_release()
-        
+
     # misc
     m = Menu(root, tearoff = 0)
     m.add_command(label = 'Copy to Clipboard')
-    
+
     # menubar
     menubar = Menu(main_window)
     filemenu = Menu(menubar, tearoff=0)
     filemenu.add_command(label="Open", command=new_file)
     filemenu.add_command(label="Exit", command=exit)
+    filemenu.add_command(label="Search", command=search)
     menubar.add_cascade(label="File", menu=filemenu)
     aboutmenu = Menu(menubar)
     menubar.add_cascade(label="About", menu=aboutmenu)
-    aboutmenu.add_command(label="About", command=about) 
+    aboutmenu.add_command(label="About", command=about)
     root.config(menu=menubar)
 
     ## FRAMES
@@ -84,6 +122,7 @@ def main_window():
     stats_frame.pack(fill='both', expand=True, padx=5, pady=5)
 
     ## READ DATA
+    global data
     data = pd.read_csv(file_path)
 
     ### WIDGETS
@@ -122,19 +161,11 @@ def main_window():
         else : x = 'no'
         text_content.config(text=f"Rows: {numRows} / Cols: {numCols} / Duplicates: {x}")
     update_text_content()
-    
+
     ## Stats Treeviews (multiple Treeviews in one row)
     # Tree with data types and missing values
     stats_tree = ttk.Treeview(stats_frame)
     stats_tree.place(rely=0, relx=0, relwidth=0.33, relheight=1)
-
-    """ Add later 
-    stats_scroll_Y = Scrollbar(stats_tree, orient="vertical", command=stats_tree.yview)
-    stats_scroll_X = Scrollbar(stats_tree, orient="horizontal", command=stats_tree.xview)
-    stats_tree.configure(yscrollcommand=stats_scroll_Y.set, xscrollcommand=stats_scroll_X.set)
-    stats_scroll_Y.pack(side=RIGHT, fill=Y)
-    stats_scroll_X.pack(side=BOTTOM, fill=X) 
-    """
 
     stats_tree['columns'] = ('Column', 'Data Type', 'Missing Values')
     stats_tree.column('#0', width=0, stretch=NO)
