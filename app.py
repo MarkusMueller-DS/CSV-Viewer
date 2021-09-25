@@ -83,7 +83,7 @@ def main_window():
         about_frame.pack(pady=5, padx=5)
         txt = Text(about_frame, bg="white", fg="black")
         txt.pack(fill='both', expand=True)
-        str_ = "CSV-Viewer created by Markus Müller\n\nFunctions:\n- copy to clipboard \n - search csv file"
+        str_ = "CSV-Viewer created by Markus Müller\n\nFunctions:\n- copy to clipboard \n - search csv file \n - order columns when clicking on heading"
         txt.insert(END, str_)
 
     def clipboard(event):
@@ -96,8 +96,16 @@ def main_window():
             index = main_tree.selection()[0]
             copy_to_clipboard = data.iloc[[index]].values[0][col]
             pc.copy(copy_to_clipboard)
+        except:
+            pass
         finally:
             m.grab_release()
+    
+    def ordercolumn(c):
+        # print(c)
+        df_sorted = data.sort_values(by=[c])
+        main_tree.delete(*main_tree.get_children())
+        populateMainTree(df_sorted)
 
     # misc
     m = Menu(root, tearoff = 0)
@@ -155,7 +163,7 @@ def main_window():
             main_tree.column(col, anchor=W, width=100, stretch=True)
         main_tree.heading('#0', text='')
         for col in columns:
-            main_tree.heading(col, text=col, anchor=W)
+            main_tree.heading(col, text=col, anchor=W, command=lambda c=col: ordercolumn(c))
         records = data.to_records(index=False)
         result = list(records)
         for counter, row in enumerate(result):
@@ -179,26 +187,33 @@ def main_window():
     ## Stats Treeviews (multiple Treeviews in one row)
     # Tree with data types and missing values
     stats_tree = ttk.Treeview(stats_frame)
-    stats_tree.place(rely=0, relx=0, relwidth=0.33, relheight=1)
+    stats_tree.place(rely=0, relx=0, relwidth=0.40, relheight=1)
 
-    stats_tree['columns'] = ('Column', 'Data Type', 'Missing Values')
+    stats_tree['columns'] = ('Column', 'Data Type', 'Missing Values', 'Unique Values')
     stats_tree.column('#0', width=0, stretch=NO)
     stats_tree.column('Column',anchor=W, width=100, stretch=True)
     stats_tree.column('Data Type',anchor=W, width=100, stretch=True)
     stats_tree.column('Missing Values', anchor=W, width=100, stretch=True)
+    stats_tree.column('Unique Values', anchor=W, width=100, stretch=True)
     stats_tree.heading('#0', text='')
     stats_tree.heading('Column',text='Column', anchor=W)
     stats_tree.heading('Data Type',text='Data Type', anchor=W)
     stats_tree.heading('Missing Values',text='Missing Values', anchor=W)
+    stats_tree.heading('Unique Values',text='Unique Values', anchor=W)
     df_types = pd.DataFrame(data.dtypes)
     df_types['missing'] = data.isnull().sum(axis=0).values.tolist()
+    # calculate number of unique values
+    nunique_list = []
+    for col in data.columns:
+        nunique_list.append(data[col].nunique())
+    df_types['unique'] = nunique_list
     df_records = df_types.to_records()
     for counter, row in enumerate(list(df_records)):
         stats_tree.insert(parent='', index='end', iid=str(counter), text='', values=tuple(row))
 
     # Tree with data from column and missing values
     focus_tree = ttk.Treeview(stats_frame)
-    focus_tree.place(rely=0, relx=0.33, relwidth=0.33, relheight=1)
+    focus_tree.place(rely=0, relx=0.40, relwidth=0.30, relheight=1)
     def select_item(event):
         global index
         index = main_tree.selection()[0]
@@ -224,7 +239,7 @@ def main_window():
 
     # Text field for focused content
     txt = Text(stats_frame, bg="white", fg="black")
-    txt.place(rely=0, relx=0.66, relwidth=0.33, relheight=1)
+    txt.place(rely=0, relx=0.70, relwidth=0.30, relheight=1)
     def show_content(event):
         global index_focus
         index_focus = focus_tree.selection()[0]

@@ -12,10 +12,12 @@ CSV-Viewer to get all the relevant information at one peak.
     - duplicates
     - data types (pandas DataFrame)
     - missing values
+    - number of unique values for each column
     - extra view of a selected row
     - extra view of a selected item in a row
 - resizeable
 - searchable
+- order column by clicking its heading
 
 ## Getting Started
 
