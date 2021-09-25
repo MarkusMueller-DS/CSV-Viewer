@@ -56,6 +56,7 @@ def main_window():
         index_list = list(set_list)
         data_query = data.iloc[index_list]
         populateMainTree(data_query)
+        update_text_content(data_query)        
 
     def search():
         global search_entry, search_win
@@ -69,6 +70,11 @@ def main_window():
         search_button = Button(search_frame, text="Search", fg="black", bg="white", command=search_data)
         search_button.pack()
 
+    def resetsearch():
+        main_tree.delete(*main_tree.get_children())
+        populateMainTree(data)
+        update_text_content()
+
     def about():
         about_window = Toplevel(main_window)
         about_window.title("About")
@@ -77,7 +83,7 @@ def main_window():
         about_frame.pack(pady=5, padx=5)
         txt = Text(about_frame, bg="white", fg="black")
         txt.pack(fill='both', expand=True)
-        str_ = "CSV-Viewer created by Markus Müller\n\nFunctions:\n- copy to clipboard"
+        str_ = "CSV-Viewer created by Markus Müller\n\nFunctions:\n- copy to clipboard \n - search csv file"
         txt.insert(END, str_)
 
     def clipboard(event):
@@ -102,8 +108,12 @@ def main_window():
     filemenu = Menu(menubar, tearoff=0)
     filemenu.add_command(label="Open", command=new_file)
     filemenu.add_command(label="Exit", command=exit)
-    filemenu.add_command(label="Search", command=search)
     menubar.add_cascade(label="File", menu=filemenu)
+    search_menu = Menu(menubar)
+    menubar.add_cascade(label='Search', menu=search_menu)
+    search_menu.add_command(label='Search', command=search)
+    search_menu.add_separator()
+    search_menu.add_command(label='Rest Search', command=resetsearch)
     aboutmenu = Menu(menubar)
     menubar.add_cascade(label="About", menu=aboutmenu)
     aboutmenu.add_command(label="About", command=about)
@@ -156,7 +166,8 @@ def main_window():
     text_content = Label(txt_frame, fg="black")
     text_content.pack()
 
-    def update_text_content():
+    def update_text_content(data_frame=data):
+        data = data_frame
         numCols = data.shape[1]
         numRows = data.shape[0]
         dups = data.duplicated().sum() 
