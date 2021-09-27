@@ -35,36 +35,40 @@ def main_window():
         root.destroy()
 
     def search_data():
+        # get data from entry
         search_str = search_entry.get()
         search_win.destroy()
         # delete treeview
         main_tree.delete(*main_tree.get_children())
         txt.delete("1.0", END)
         focus_tree.delete(*focus_tree.get_children())
-        # query data
-        data_str = data.astype('str')
-        result_index_list= []
-        for col in data_str.columns:
-            index_result = list(data_str.loc[data_str[col] == search_str].index.values)
-            if len(index_result) != 0:
-                result_index_list.append(index_result)
-            else:
-                continue
+        # check the format of the search string
+        # if "=" in search_str:
+        search_col = search_str.split("=")[0]
+        search_str = search_str.split("=")[1]
 
-        flat_list = [item for sublist in result_index_list for item in sublist]
-        set_list = set(flat_list)
-        index_list = list(set_list)
-        data_query = data.iloc[index_list]
+        # query data
+        # check dtype of column
+        if data[search_col].dtype != 'object':
+            if "." in search_str:
+                search_str = float(search_str)
+            else:
+                search_str = int(search_str)
+
+        data_query = data.loc[data[search_col] == search_str]
         populateMainTree(data_query)
-        update_text_content(data_query)        
+        update_text_content(data_query)
 
     def search():
         global search_entry, search_win
         search_win = Toplevel(main_window)
         search_win.title("Search")
-        search_win.geometry("300x130")
+        search_win.geometry("350x150")
         search_frame = LabelFrame(search_win, text="Search", fg="black", bd=3, pady=5, padx=5)
         search_frame.pack(pady=5, padx=5)
+        search_help_txt = Text(search_frame, height=2, fg="black", bg="white")
+        search_help_txt.pack()
+        search_help_txt.insert(END, "write the name of the column and then the \n search string:  col=search_string")
         search_entry = Entry(search_frame, bg="white", fg="black")
         search_entry.pack(padx=5, pady=5)
         search_button = Button(search_frame, text="Search", fg="black", bg="white", command=search_data)
@@ -218,6 +222,7 @@ def main_window():
         global index
         index = main_tree.selection()[0]
         focus_tree.delete(*focus_tree.get_children())       # delete prev tree
+        txt.delete("1.0", END)
         # insert data into focus_tree
         focus_tree['columns'] = ('Column', 'Content')
         focus_tree.column('#0', width=0, stretch=NO)
