@@ -6,7 +6,7 @@ Lightweight csv-viewer by Markus Müller
 ## Description
 
 CSV-Viewer to get all the relevant information at one peak.
-- Main view with the whole csv-file
+- Main view with the entire csv-file
 - Infomration about
     - number of rows and columns
     - duplicates
