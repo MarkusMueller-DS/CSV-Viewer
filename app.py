@@ -2,6 +2,7 @@
 
 from tkinter import *
 from tkinter import ttk, filedialog
+from ttkbootstrap import Style
 import numpy as np
 # from numpy import index_exp
 import pandas as pd
@@ -267,10 +268,13 @@ def onclose(event):
     # function to destroy the root window when main window is closed
     root.destroy()
 
+
+
 # Init Tkinter
 # Start-window
 root = Tk()
 root.title("CSV Viewer")
+root.style = Style()
 window_width = 200
 window_height = 100
 screen_width = root.winfo_screenwidth()
@@ -281,18 +285,18 @@ root.geometry(f'{window_width}x{window_height}+{center_x}+{center_y}')
 root.resizable(0,0)
 
 # Styling
-style = ttk.Style(root)
-style.theme_use("default")
-style.configure("Treeview.heading", 
-background = "silver",
-foreground = "black",
-)
-style.map('Treeview', background=[('selected', 'red')])
+# style = ttk.Style(root)
+# style.theme_use("default")
+# style.configure("Treeview.heading",
+# background = "silver",
+# foreground = "black",
+# )
+# style.map('Treeview', background=[('selected', 'red')])
 
 # Widgets
-open_frame = LabelFrame(root, text="Select a CSV-File to view", fg="black", bd=4)
+open_frame = ttk.Labelframe(root, text="Select a CSV-File to view", style='TLabelframe')
 open_frame.pack(fill="both", expand="yes", padx=10, pady=10)
-open_button = Button(open_frame, text="Open File...", fg="black", command=main_window)
+open_button = ttk.Button(open_frame, text="Open File...", command=main_window)
 open_button.pack(pady=10)
 
 root.mainloop()
