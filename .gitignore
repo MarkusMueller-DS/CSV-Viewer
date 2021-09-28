@@ -8,4 +8,6 @@ __pycache__
 app_old.py
 layout_test.py
 list_files.py
+test_theme.py
+
 
