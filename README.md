@@ -1,5 +1,5 @@
 # CSV-Viewer
-Lightweight csv-viewer by Markus Müller
+##### Lightweight csv-viewer by Markus Müller
 
 ![screenshot](images/example.png)
 
