@@ -19,7 +19,7 @@ CSV-Viewer to get all the relevant information at one peak.
     - extra view of a selected item in a row
 - resizeable
 - searchable
-- order column by clicking its heading
+- order column by clicking its heading (wip)
 
 ## Getting Started
 

@@ -120,8 +120,11 @@ def main_window():
             m.grab_release()
     
     def ordercolumn(c):
-        # print(c)
-        df_sorted = data.sort_values(by=[c])
+        # check if search_bool is True
+        if (search_bool):
+            df_sorted = data_query.sort_values(by=[c])
+        else:
+            df_sorted = data.sort_values(by=[c])
         main_tree.delete(*main_tree.get_children())
         populateMainTree(df_sorted)
 
@@ -139,7 +142,7 @@ def main_window():
     menubar.add_cascade(label='Search', menu=search_menu)
     search_menu.add_command(label='Search', command=search)
     search_menu.add_separator()
-    search_menu.add_command(label='Rest Search', command=resetsearch)
+    search_menu.add_command(label='Reset Search', command=resetsearch)
     aboutmenu = Menu(menubar)
     menubar.add_cascade(label="About", menu=aboutmenu)
     aboutmenu.add_command(label="About", command=about)
@@ -251,9 +254,7 @@ def main_window():
         focus_tree.heading('Content',text='Content', anchor=W)
         # create DataFrame to query data
         # check if Search is active to use different DataFrame
-        print(search_bool)
         if (search_bool):
-            print("active search")
             select_data = data_query.iloc[[index]]
         else:
             select_data = data.iloc[[index]]
