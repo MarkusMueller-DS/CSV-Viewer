@@ -77,7 +77,7 @@ def main_window():
     def resetsearch():
         main_tree.delete(*main_tree.get_children())
         populateMainTree(data)
-        update_text_content()
+        update_text_content(data)
 
     def about():
         about_window = Toplevel(main_window)
@@ -135,7 +135,7 @@ def main_window():
     # Main Frame where the CSV-Viever is palced
     main_frame = LabelFrame(main_window, text="Main View", fg="black", bd=3, pady=5, padx=5)
     main_frame.pack(fill='both', expand=True, padx=5, pady=5)
-    # PLACEHOLDER frmae where text information is placed
+    # PLACEHOLDER frame where text information is placed
     txt_frame = LabelFrame(main_window, text="File Information", fg="black", bd=3, pady=5, padx=5, height=50)
     txt_frame.pack(fill='both', expand=FALSE, padx=5, pady=5)
     # Stats Frame where more Information about the file and row is placed
@@ -157,7 +157,7 @@ def main_window():
     scroll_Y.pack(side=RIGHT, fill=Y)
     scroll_X.pack(side=BOTTOM, fill=X)
 
-    def populateMainTree(data_frame=data):
+    def populateMainTree(data_frame):
         data = data_frame
         columns = data.columns.values
         columns_tupel = tuple(columns)
@@ -172,13 +172,13 @@ def main_window():
         result = list(records)
         for counter, row in enumerate(result):
             main_tree.insert(parent='', index='end', iid=str(counter), text='', values=tuple(row))
-    populateMainTree()
+    populateMainTree(data)
 
     ## Text area
     text_content = Label(txt_frame, fg="black")
     text_content.pack()
 
-    def update_text_content(data_frame=data):
+    def update_text_content(data_frame):
         data = data_frame
         numCols = data.shape[1]
         numRows = data.shape[0]
@@ -186,7 +186,7 @@ def main_window():
         if dups > 0 : x = 'yes' 
         else : x = 'no'
         text_content.config(text=f"Rows: {numRows} / Cols: {numCols} / Duplicates: {x}")
-    update_text_content()
+    update_text_content(data)
 
     ## Stats Treeviews (multiple Treeviews in one row)
     # Tree with data types and missing values
@@ -204,20 +204,25 @@ def main_window():
     stats_tree.heading('Data Type',text='Data Type', anchor=W)
     stats_tree.heading('Missing Values',text='Missing Values', anchor=W)
     stats_tree.heading('Unique Values',text='Unique Values', anchor=W)
-    df_types = pd.DataFrame(data.dtypes)
-    df_types['missing'] = data.isnull().sum(axis=0).values.tolist()
-    # calculate number of unique values
-    nunique_list = []
-    for col in data.columns:
-        nunique_list.append(data[col].nunique())
-    df_types['unique'] = nunique_list
-    df_records = df_types.to_records()
-    for counter, row in enumerate(list(df_records)):
-        stats_tree.insert(parent='', index='end', iid=str(counter), text='', values=tuple(row))
+
+    # should be not subjected by search 
+    def update_types_content(data_frame):
+        df_types = pd.DataFrame(data_frame.dtypes)
+        df_types['missing'] = data.isnull().sum(axis=0).values.tolist()
+        # calculate number of unique values
+        nunique_list = []
+        for col in data.columns:
+            nunique_list.append(data[col].nunique())
+        df_types['unique'] = nunique_list
+        df_records = df_types.to_records()
+        for counter, row in enumerate(list(df_records)):
+            stats_tree.insert(parent='', index='end', iid=str(counter), text='', values=tuple(row))
+    update_types_content(data)
 
     # Tree with data from column and missing values
     focus_tree = ttk.Treeview(stats_frame)
     focus_tree.place(rely=0, relx=0.40, relwidth=0.30, relheight=1)
+    
     def select_item(event):
         global index
         index = main_tree.selection()[0]
