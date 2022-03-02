@@ -47,7 +47,8 @@ Markus Müller
 [@MarkusM99098101](https://twitter.com/MarkusM99098101)
 
 ## Version History
-
+* 0.21 (02.03.2022)
+    * enhanced search function to be more interactive
 * 0.2 (24.09.2020)
     * added search function
 * 0.1
