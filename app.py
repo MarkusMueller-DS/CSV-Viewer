@@ -8,6 +8,9 @@ import pandas as pd
 import os
 import pyperclip3 as pc
 
+# Falg for ativ search
+search_bool = False
+
 # Functions
 def main_window():
     # alomost everything gets managed here
@@ -42,6 +45,7 @@ def main_window():
         main_tree.delete(*main_tree.get_children())
         txt.delete("1.0", END)
         focus_tree.delete(*focus_tree.get_children())
+        stats_tree.delete(*stats_tree.get_children())
         # check the format of the search string
         # if "=" in search_str:
         search_col = search_str.split("=")[0]
@@ -55,9 +59,13 @@ def main_window():
             else:
                 search_str = int(search_str)
 
+        global data_query
         data_query = data.loc[data[search_col] == search_str]
+        global search_bool
+        search_bool=True
         populateMainTree(data_query)
         update_text_content(data_query)
+        update_types_content(data_query)
 
     def search():
         global search_entry, search_win
@@ -75,9 +83,15 @@ def main_window():
         search_button.pack()
 
     def resetsearch():
+        global search_bool
+        search_bool=False
+        # delete every bit of content in each tree
         main_tree.delete(*main_tree.get_children())
+        stats_tree.delete(*stats_tree.get_children())
+        # draw tree with start content
         populateMainTree(data)
         update_text_content(data)
+        update_types_content(data)
 
     def about():
         about_window = Toplevel(main_window)
@@ -143,7 +157,6 @@ def main_window():
     stats_frame.pack(fill='both', expand=True, padx=5, pady=5)
 
     ## READ DATA
-    global data
     data = pd.read_csv(file_path)
 
     ### WIDGETS
@@ -205,9 +218,9 @@ def main_window():
     stats_tree.heading('Missing Values',text='Missing Values', anchor=W)
     stats_tree.heading('Unique Values',text='Unique Values', anchor=W)
 
-    # should be not subjected by search 
     def update_types_content(data_frame):
-        df_types = pd.DataFrame(data_frame.dtypes)
+        data = data_frame
+        df_types = pd.DataFrame(data.dtypes)
         df_types['missing'] = data.isnull().sum(axis=0).values.tolist()
         # calculate number of unique values
         nunique_list = []
@@ -237,7 +250,13 @@ def main_window():
         focus_tree.heading('Column',text='Column', anchor=W)
         focus_tree.heading('Content',text='Content', anchor=W)
         # create DataFrame to query data
-        select_data = data.iloc[[index]]
+        # check if Search is active to use different DataFrame
+        print(search_bool)
+        if (search_bool):
+            print("active search")
+            select_data = data_query.iloc[[index]]
+        else:
+            select_data = data.iloc[[index]]
         columns = select_data.columns.values.tolist()
         values = select_data.values.tolist()[0]
         df_dict = {'columns': columns, 'content': values}
