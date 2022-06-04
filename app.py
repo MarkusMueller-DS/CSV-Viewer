@@ -62,7 +62,7 @@ def main_window():
         data_query = data.loc[data[search_col] == search_str]
         global search_bool
         search_bool = True
-        populateMainTree(data_query)
+        populatemaintree(data_query)
         update_text_content(data_query)
         update_types_content(data_query)
 
@@ -88,7 +88,7 @@ def main_window():
         main_tree.delete(*main_tree.get_children())
         stats_tree.delete(*stats_tree.get_children())
         # draw tree with start content
-        populateMainTree(data)
+        populatemaintree(data)
         update_text_content(data)
         update_types_content(data)
 
@@ -126,7 +126,7 @@ def main_window():
         else:
             df_sorted = data.sort_values(by=[c])
         main_tree.delete(*main_tree.get_children())
-        populateMainTree(df_sorted)
+        populatemaintree(df_sorted)
 
     # misc
     m = Menu(root, tearoff=0)
@@ -149,7 +149,7 @@ def main_window():
     root.config(menu=menubar)
 
     # FRAMES
-    # Main Frame where the CSV-Viever is palced
+    # Main Frame where the CSV-Viewer is placed
     main_frame = LabelFrame(main_window, text="Main View", fg="black", bd=3, pady=5, padx=5)
     main_frame.pack(fill='both', expand=True, padx=5, pady=5)
     # PLACEHOLDER frame where text information is placed
@@ -167,17 +167,17 @@ def main_window():
     main_tree = ttk.Treeview(main_frame)
     main_tree.place(rely=0, relx=0, relwidth=1, relheight=1)
 
-    scroll_Y = Scrollbar(main_frame, orient="vertical", command=main_tree.yview)
-    scroll_X = Scrollbar(main_frame, orient="horizontal", command=main_tree.xview)
-    main_tree.configure(yscrollcommand=scroll_Y.set, xscrollcommand=scroll_X.set)
-    scroll_Y.pack(side=RIGHT, fill=Y)
-    scroll_X.pack(side=BOTTOM, fill=X)
+    scroll_y = Scrollbar(main_frame, orient="vertical", command=main_tree.yview)
+    scroll_x = Scrollbar(main_frame, orient="horizontal", command=main_tree.xview)
+    main_tree.configure(yscrollcommand=scroll_y.set, xscrollcommand=scroll_x.set)
+    scroll_y.pack(side=RIGHT, fill=Y)
+    scroll_x.pack(side=BOTTOM, fill=X)
 
-    def populateMainTree(data_frame):
+    def populatemaintree(data_frame):
         data = data_frame
         columns = data.columns.values
-        columns_tupel = tuple(columns)
-        main_tree['columns'] = columns_tupel
+        columns_tuple = tuple(columns)
+        main_tree['columns'] = columns_tuple
         main_tree.column('#0', width=0, stretch=NO)
         for col in columns:
             main_tree.column(col, anchor=W, width=100, stretch=True)
@@ -189,7 +189,7 @@ def main_window():
         for counter, row in enumerate(result):
             main_tree.insert(parent='', index='end', iid=str(counter), text='', values=tuple(row))
 
-    populateMainTree(data)
+    populatemaintree(data)
 
     # Text area
     text_content = Label(txt_frame, fg="black")
@@ -259,7 +259,7 @@ def main_window():
         focus_tree.heading('Content', text='Content', anchor=W)
         # create DataFrame to query data
         # check if Search is active to use different DataFrame
-        if (search_bool):
+        if search_bool:
             select_data = data_query.iloc[[index]]
         else:
             select_data = data.iloc[[index]]
