@@ -2,21 +2,20 @@
 
 from tkinter import *
 from tkinter import ttk, filedialog
-import numpy as np
-# from numpy import index_exp
 import pandas as pd
 import os
 import pyperclip3 as pc
 
-# Falg for ativ search
+# Flag for ativ search
 search_bool = False
+
 
 # Functions
 def main_window():
-    # alomost everything gets managed here
+    # almost everything gets managed here
     global file_path
     cwd = os.getcwd()
-    file_path= filedialog.askopenfilename(initialdir=cwd, filetypes=[("CSV file","*.csv")])
+    file_path = filedialog.askopenfilename(initialdir=cwd, filetypes=[("CSV file", "*.csv")])
     root.withdraw()
     main_window = Toplevel(root)
     main_window.title("CSV Viewer")
@@ -24,8 +23,8 @@ def main_window():
     window_height = 800
     screen_width = root.winfo_screenwidth()
     screen_height = root.winfo_screenheight()
-    center_x = int(screen_width/2 - window_width / 2)
-    center_y = int(screen_height/2 - window_height / 2)
+    center_x = int(screen_width / 2 - window_width / 2)
+    center_y = int(screen_height / 2 - window_height / 2)
     main_window.geometry(f'{window_width}x{window_height}+{center_x}+{center_y}')
 
     def new_file():
@@ -62,7 +61,7 @@ def main_window():
         global data_query
         data_query = data.loc[data[search_col] == search_str]
         global search_bool
-        search_bool=True
+        search_bool = True
         populateMainTree(data_query)
         update_text_content(data_query)
         update_types_content(data_query)
@@ -84,7 +83,7 @@ def main_window():
 
     def resetsearch():
         global search_bool
-        search_bool=False
+        search_bool = False
         # delete every bit of content in each tree
         main_tree.delete(*main_tree.get_children())
         stats_tree.delete(*stats_tree.get_children())
@@ -101,7 +100,8 @@ def main_window():
         about_frame.pack(pady=5, padx=5)
         txt = Text(about_frame, bg="white", fg="black")
         txt.pack(fill='both', expand=True)
-        str_ = "CSV-Viewer created by Markus Müller\n\nFunctions:\n- copy to clipboard \n - search csv file \n - order columns when clicking on heading"
+        str_ = "CSV-Viewer created by Markus Müller\n\nFunctions:\n- copy to clipboard \n" \
+               "- search csv file \n- order columns when clicking on heading"
         txt.insert(END, str_)
 
     def clipboard(event):
@@ -118,10 +118,10 @@ def main_window():
             pass
         finally:
             m.grab_release()
-    
+
     def ordercolumn(c):
         # check if search_bool is True
-        if (search_bool):
+        if search_bool:
             df_sorted = data_query.sort_values(by=[c])
         else:
             df_sorted = data.sort_values(by=[c])
@@ -129,8 +129,8 @@ def main_window():
         populateMainTree(df_sorted)
 
     # misc
-    m = Menu(root, tearoff = 0)
-    m.add_command(label = 'Copy to Clipboard')
+    m = Menu(root, tearoff=0)
+    m.add_command(label='Copy to Clipboard')
 
     # menubar
     menubar = Menu(main_window)
@@ -148,7 +148,7 @@ def main_window():
     aboutmenu.add_command(label="About", command=about)
     root.config(menu=menubar)
 
-    ## FRAMES
+    # FRAMES
     # Main Frame where the CSV-Viever is palced
     main_frame = LabelFrame(main_window, text="Main View", fg="black", bd=3, pady=5, padx=5)
     main_frame.pack(fill='both', expand=True, padx=5, pady=5)
@@ -156,14 +156,14 @@ def main_window():
     txt_frame = LabelFrame(main_window, text="File Information", fg="black", bd=3, pady=5, padx=5, height=50)
     txt_frame.pack(fill='both', expand=FALSE, padx=5, pady=5)
     # Stats Frame where more Information about the file and row is placed
-    stats_frame = LabelFrame(main_window, text="More Information", fg="black",bd=3, pady=5, padx=5)
+    stats_frame = LabelFrame(main_window, text="More Information", fg="black", bd=3, pady=5, padx=5)
     stats_frame.pack(fill='both', expand=True, padx=5, pady=5)
 
-    ## READ DATA
+    # READ DATA
     data = pd.read_csv(file_path)
 
-    ### WIDGETS
-    ## Main Treeview
+    # WIDGETS
+    # Main Treeview
     main_tree = ttk.Treeview(main_frame)
     main_tree.place(rely=0, relx=0, relwidth=1, relheight=1)
 
@@ -188,9 +188,10 @@ def main_window():
         result = list(records)
         for counter, row in enumerate(result):
             main_tree.insert(parent='', index='end', iid=str(counter), text='', values=tuple(row))
+
     populateMainTree(data)
 
-    ## Text area
+    # Text area
     text_content = Label(txt_frame, fg="black")
     text_content.pack()
 
@@ -198,28 +199,31 @@ def main_window():
         data = data_frame
         numCols = data.shape[1]
         numRows = data.shape[0]
-        dups = data.duplicated().sum() 
-        if dups > 0 : x = 'yes' 
-        else : x = 'no'
+        dups = data.duplicated().sum()
+        if dups > 0:
+            x = 'yes'
+        else:
+            x = 'no'
         text_content.config(text=f"Rows: {numRows} / Cols: {numCols} / Duplicates: {x}")
+
     update_text_content(data)
 
-    ## Stats Treeviews (multiple Treeviews in one row)
+    # Stats Treeviews (multiple Treeviews in one row)
     # Tree with data types and missing values
     stats_tree = ttk.Treeview(stats_frame)
     stats_tree.place(rely=0, relx=0, relwidth=0.40, relheight=1)
 
     stats_tree['columns'] = ('Column', 'Data Type', 'Missing Values', 'Unique Values')
     stats_tree.column('#0', width=0, stretch=NO)
-    stats_tree.column('Column',anchor=W, width=100, stretch=True)
-    stats_tree.column('Data Type',anchor=W, width=100, stretch=True)
+    stats_tree.column('Column', anchor=W, width=100, stretch=True)
+    stats_tree.column('Data Type', anchor=W, width=100, stretch=True)
     stats_tree.column('Missing Values', anchor=W, width=100, stretch=True)
     stats_tree.column('Unique Values', anchor=W, width=100, stretch=True)
     stats_tree.heading('#0', text='')
-    stats_tree.heading('Column',text='Column', anchor=W)
-    stats_tree.heading('Data Type',text='Data Type', anchor=W)
-    stats_tree.heading('Missing Values',text='Missing Values', anchor=W)
-    stats_tree.heading('Unique Values',text='Unique Values', anchor=W)
+    stats_tree.heading('Column', text='Column', anchor=W)
+    stats_tree.heading('Data Type', text='Data Type', anchor=W)
+    stats_tree.heading('Missing Values', text='Missing Values', anchor=W)
+    stats_tree.heading('Unique Values', text='Unique Values', anchor=W)
 
     def update_types_content(data_frame):
         data = data_frame
@@ -233,25 +237,26 @@ def main_window():
         df_records = df_types.to_records()
         for counter, row in enumerate(list(df_records)):
             stats_tree.insert(parent='', index='end', iid=str(counter), text='', values=tuple(row))
+
     update_types_content(data)
 
     # Tree with data from column and missing values
     focus_tree = ttk.Treeview(stats_frame)
     focus_tree.place(rely=0, relx=0.40, relwidth=0.30, relheight=1)
-    
+
     def select_item(event):
         global index
         index = main_tree.selection()[0]
-        focus_tree.delete(*focus_tree.get_children())       # delete prev tree
+        focus_tree.delete(*focus_tree.get_children())  # delete prev tree
         txt.delete("1.0", END)
         # insert data into focus_tree
         focus_tree['columns'] = ('Column', 'Content')
         focus_tree.column('#0', width=0, stretch=NO)
-        focus_tree.column('Column',anchor=W, width=80)
-        focus_tree.column('Content',anchor=W, width=80)
+        focus_tree.column('Column', anchor=W, width=80)
+        focus_tree.column('Content', anchor=W, width=80)
         focus_tree.heading('#0', text='')
-        focus_tree.heading('Column',text='Column', anchor=W)
-        focus_tree.heading('Content',text='Content', anchor=W)
+        focus_tree.heading('Column', text='Column', anchor=W)
+        focus_tree.heading('Content', text='Content', anchor=W)
         # create DataFrame to query data
         # check if Search is active to use different DataFrame
         if (search_bool):
@@ -270,6 +275,7 @@ def main_window():
     # Text field for focused content
     txt = Text(stats_frame, bg="white", fg="black")
     txt.place(rely=0, relx=0.70, relwidth=0.30, relheight=1)
+
     def show_content(event):
         global index_focus
         index_focus = focus_tree.selection()[0]
@@ -280,17 +286,19 @@ def main_window():
         txt.delete("1.0", END)
         txt.insert(END, str)
 
-    ## KEYBINDINGS
+    # KEYBINDINGS
     main_tree.bind('<ButtonRelease-1>', select_item)
     main_tree.bind('<ButtonRelease-2>', clipboard)
     focus_tree.bind('<ButtonRelease-1>', show_content)
 
-    ## CLOSE ROOT when main window is closed
+    # CLOSE ROOT when main window is closed
     main_window.protocol('WM_DELETE_WINDOW', lambda: onclose(main_window))
+
 
 def onclose(event):
     # function to destroy the root window when main window is closed
     root.destroy()
+
 
 # Init Tkinter
 # Start-window
@@ -300,18 +308,18 @@ window_width = 200
 window_height = 100
 screen_width = root.winfo_screenwidth()
 screen_height = root.winfo_screenheight()
-center_x = int(screen_width/2 - window_width / 2)
-center_y = int(screen_height/2 - window_height / 2)
+center_x = int(screen_width / 2 - window_width / 2)
+center_y = int(screen_height / 2 - window_height / 2)
 root.geometry(f'{window_width}x{window_height}+{center_x}+{center_y}')
-root.resizable(0,0)
+root.resizable(0, 0)
 
 # Styling
 style = ttk.Style(root)
 style.theme_use("default")
-style.configure("Treeview.heading", 
-background = "silver",
-foreground = "black",
-)
+style.configure("Treeview.heading",
+                background="silver",
+                foreground="black",
+                )
 style.map('Treeview', background=[('selected', 'red')])
 
 # Widgets
