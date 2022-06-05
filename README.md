@@ -9,7 +9,7 @@
 
 CSV-Viewer to get all the relevant information at one peak.
 - Main view with the entire csv-file
-- Infomration about
+- Information about
     - number of rows and columns
     - duplicates
     - data types (pandas DataFrame)
@@ -56,7 +56,7 @@ Markus Müller
 
 ## ToDp
 
-* add seach function
+* add search function
 
 ## License
 
