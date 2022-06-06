@@ -29,11 +29,11 @@ CSV-Viewer to get all the relevant information at one peak.
 * tkinter
 * numpy
 * pandas
-* pyperclip3
+* pyclip
 
 ### Installing
 
-* Make sure you have the dependencies installed and you are good to go
+* Make sure you have the dependencies installed, and you are good to go
 
 ### Executing program
 
@@ -54,7 +54,7 @@ Markus Müller
 * 0.1
     * Initial Release
 
-## ToDp
+## ToDo
 
 * add search function
 

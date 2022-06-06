@@ -4,9 +4,9 @@ from tkinter import *
 from tkinter import ttk, filedialog
 import pandas as pd
 import os
-import pyperclip3 as pc
+import pyclip as pc
 
-# Flag for ativ search
+# Flag for active search
 search_bool = False
 
 
@@ -32,7 +32,7 @@ def main_window():
         main_window.destroy()
         root.deiconify()
 
-    def exit():
+    def root_exit():
         main_window.destroy()
         root.destroy()
 
@@ -114,7 +114,7 @@ def main_window():
             index = main_tree.selection()[0]
             copy_to_clipboard = data.iloc[[index]].values[0][col]
             pc.copy(copy_to_clipboard)
-        except:
+        except pc.base.ClipboardException:
             pass
         finally:
             m.grab_release()
@@ -136,7 +136,7 @@ def main_window():
     menubar = Menu(main_window)
     filemenu = Menu(menubar, tearoff=0)
     filemenu.add_command(label="Open", command=new_file)
-    filemenu.add_command(label="Exit", command=exit)
+    filemenu.add_command(label="Exit", command=root_exit)
     menubar.add_cascade(label="File", menu=filemenu)
     search_menu = Menu(menubar)
     menubar.add_cascade(label='Search', menu=search_menu)
@@ -282,9 +282,9 @@ def main_window():
         select_data = data.iloc[[index]]
         columns = select_data.columns.values.tolist()
         values_ = select_data.values.tolist()[0]
-        str = values_[int(index_focus)]
+        index_str = values_[int(index_focus)]
         txt.delete("1.0", END)
-        txt.insert(END, str)
+        txt.insert(END, index_str)
 
     # KEYBINDINGS
     main_tree.bind('<ButtonRelease-1>', select_item)
@@ -311,7 +311,7 @@ screen_height = root.winfo_screenheight()
 center_x = int(screen_width / 2 - window_width / 2)
 center_y = int(screen_height / 2 - window_height / 2)
 root.geometry(f'{window_width}x{window_height}+{center_x}+{center_y}')
-root.resizable(0, 0)
+root.resizable(False, False)
 
 # Styling
 style = ttk.Style(root)
