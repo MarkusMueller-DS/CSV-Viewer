@@ -9,7 +9,7 @@
 
 CSV-Viewer to get all the relevant information at one peak.
 - Main view with the entire csv-file
-- Infomration about
+- Information about
     - number of rows and columns
     - duplicates
     - data types (pandas DataFrame)
@@ -29,11 +29,11 @@ CSV-Viewer to get all the relevant information at one peak.
 * tkinter
 * numpy
 * pandas
-* pyperclip3
+* pyclip
 
 ### Installing
 
-* Make sure you have the dependencies installed and you are good to go
+* Make sure you have the dependencies installed, and you are good to go
 
 ### Executing program
 
@@ -54,9 +54,9 @@ Markus Müller
 * 0.1
     * Initial Release
 
-## ToDp
+## ToDo
 
-* add seach function
+* add search function
 
 ## License
 
