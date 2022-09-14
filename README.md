@@ -54,9 +54,9 @@ Markus Müller
 * 0.1
     * Initial Release
 
-## ToDp
+## ToDo
 
-* add seach function
+
 
 ## License
 
